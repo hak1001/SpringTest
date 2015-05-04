@@ -38,20 +38,19 @@ import springbook.user.domain.User;
 	}
 
 	public void add(final User user) throws ClassNotFoundException, SQLException{
-		class AddStatement implements StatementStrategy{
-			public PreparedStatement makePreparedStatement(Connection c) throws SQLException{
-				PreparedStatement ps = c.prepareStatement(
-							"insert into users(id, name, password) values(?,?,?)");
-				ps.setString(1,  user.getId());
-				ps.setString(2,  user.getName());
-				ps.setString(3,  user.getPassword());
-				
-				return ps;
+		jdbcContextWithStatementStrategy(
+			new StatementStrategy() {
+				public PreparedStatement makePreparedStatement(Connection c) throws SQLException{
+					PreparedStatement ps = c.prepareStatement(
+								"insert into users(id, name, password) values(?,?,?)");
+					ps.setString(1,  user.getId());
+					ps.setString(2,  user.getName());
+					ps.setString(3,  user.getPassword());
+					
+					return ps;
+				}
 			}
-		}
-		
-		StatementStrategy st = new AddStatement();
-		jdbcContextWithStatementStrategy(st);
+		);
 	}
 	
 	public User get(String id) throws ClassNotFoundException, SQLException{
@@ -82,8 +81,17 @@ import springbook.user.domain.User;
 	}
 	
 	public void deleteAll() throws SQLException {
-		StatementStrategy st = new DeleteAllStatement();
-		jdbcContextWithStatementStrategy(st);
+		jdbcContextWithStatementStrategy(
+			new StatementStrategy() {
+				
+				@Override
+				public PreparedStatement makePreparedStatement(Connection c)
+						throws SQLException {
+					// TODO Auto-generated method stub
+					return c.prepareStatement("delete from users");
+				}
+			}
+		);
 	}
 	
 	public int getCount() throws SQLException{
