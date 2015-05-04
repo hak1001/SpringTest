@@ -50,6 +50,7 @@ public class JUnitTest {
 		assertThat(testObject, not(hasItem(this)));
 		testObject.add(this);
 		
+		// TODO 에러나는 이유 찾아볼 것..
 		//assertThat(contextObject, either(is(nullValue())).or(is(this.context)));
 		contextObject = this.context;
 	}
