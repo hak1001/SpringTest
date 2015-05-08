@@ -34,20 +34,10 @@ public class UserDaoTest {
 	
 	@Before
 	public void setUp(){
-		//System.out.println(this.context);
-		//System.out.println(this);
 		this.dao = this.context.getBean("userDao", UserDao.class);
-		
-		/*
-		dao = new UserDao();
-		DataSource dataSource = new SingleConnectionDataSource(
-				"jdbc:mysql://localhost/testdb?characterEncoding=UTF-8", "spring", "book", true);
-		dao.setDataSource(dataSource);
-		*/
-		
-		this.user1 = new User("hak1001", "±èÇĞ¿­", "password");
-		this.user2 = new User("hakgoing", "Å×½ºÆ®", "xptmxm");
-		this.user3 = new User("admin", "°ü¸®ÀÚ", "admintest");
+		this.user1 = new User("test1", "í…ŒìŠ¤í„°1", "password");
+		this.user2 = new User("test2", "í…ŒìŠ¤í„°2", "xptmxm");
+		this.user3 = new User("admin", "ê´€ë¦¬ì", "admintest");
 	}
 	
 	@Test
