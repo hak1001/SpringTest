@@ -16,12 +16,10 @@ import springbook.user.domain.User;
 	private DataSource dataSource;
 	private JdbcContext jdbcContext;
 	
-	public void setJdbcContext(JdbcContext jdbcContext){
-		this.jdbcContext = jdbcContext;
-	}
-	
 	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
+		this.jdbcContext = new JdbcContext();
+		this.jdbcContext.setDataSource(dataSource);
 	}
 	
 	public void add(final User user) throws ClassNotFoundException, SQLException{
