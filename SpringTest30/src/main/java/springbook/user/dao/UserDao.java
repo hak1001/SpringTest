@@ -66,17 +66,7 @@ import springbook.user.domain.User;
 	}
 	
 	public void deleteAll() throws SQLException {
-		this.jdbcContext.workWithStatementStrategy(
-			new StatementStrategy() {
-				
-				@Override
-				public PreparedStatement makePreparedStatement(Connection c)
-						throws SQLException {
-					// TODO Auto-generated method stub
-					return c.prepareStatement("delete from users");
-				}
-			}
-		);
+		this.jdbcContext.executeSql("delete from users");
 	}
 	
 	public int getCount() throws SQLException{

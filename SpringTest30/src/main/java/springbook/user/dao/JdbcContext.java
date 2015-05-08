@@ -29,4 +29,17 @@ public class JdbcContext {
 		}
 		
 	}
+	
+	public void executeSql(final String query) throws SQLException{
+		workWithStatementStrategy(
+			new StatementStrategy() {
+				@Override
+				public PreparedStatement makePreparedStatement(Connection c)
+						throws SQLException {
+					// TODO Auto-generated method stub
+					return c.prepareStatement(query);
+				}
+			}
+		);
+	}
 }
