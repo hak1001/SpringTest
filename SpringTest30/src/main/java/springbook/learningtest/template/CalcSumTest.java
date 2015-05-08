@@ -1,18 +1,30 @@
 package springbook.learningtest.template;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*; 
-import static org.junit.matchers.JUnitMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class CalcSumTest {
+	Calculator calculator;
+	String numFilepath;
+	
+	@Before
+	public void setup(){
+		this.calculator = new Calculator();
+		this.numFilepath = getClass().getResource("numbers.txt").getPath();
+	}
+	
 	@Test
 	public void sumOfNumbers() throws IOException{
-		Calculator calculator = new Calculator();
-		int sum = calculator.calcSum(getClass().getResource("numbers.txt").getPath());
-		assertThat(sum, is(10));
+		assertThat(calculator.calcSum(numFilepath), is(10));
+	}
+	
+	@Test
+	public void multiplyOfNumbers() throws IOException{
+		assertThat(calculator.calcMultiply(numFilepath), is(24));
 	}
 }
