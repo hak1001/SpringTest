@@ -12,14 +12,24 @@ import org.springframework.jdbc.core.RowMapper;
 import springbook.user.domain.User;
 
 public class UserDao {
-	
-	private DataSource dataSource;
-	private JdbcTemplate jdbcTemplate;
-	
 	public void setDataSource(DataSource dataSource) {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
-		this.dataSource = dataSource;
 	}
+	
+	private JdbcTemplate jdbcTemplate;
+	
+	// 인스턴스 변수 userMapper에 매핑용 콜백 오브젝트 
+	private RowMapper<User> userMapper = 
+		new RowMapper<User>(){
+			public User mapRow(ResultSet rs , int rowNum) throws SQLException{
+				User user = new User();
+				user.setId(rs.getString("id"));
+				user.setName(rs.getString("name"));
+				user.setPassword(rs.getString("password"));
+				return user;
+			}
+		};
+	
 	
 	public void add(final User user) throws ClassNotFoundException, SQLException{
 		this.jdbcTemplate.update("insert into users(id, name, password) values(?,?,?)"
@@ -28,17 +38,7 @@ public class UserDao {
 	
 	public User get(String id) throws ClassNotFoundException, SQLException{
 		return this.jdbcTemplate.queryForObject("select * from users where id =?"
-				, new Object[] {id}
-				, new RowMapper<User>(){
-					public User mapRow(ResultSet rs , int rowNum) throws SQLException{
-						User user = new User();
-						user.setId(rs.getString("id"));
-						user.setName(rs.getString("name"));
-						user.setPassword(rs.getString("password"));
-						return user;
-					}
-				
-		});
+				, new Object[] {id}	, this.userMapper);
 	}
 	
 	public void deleteAll() throws SQLException {
@@ -51,16 +51,7 @@ public class UserDao {
 	
 	public List<User> getAll() {
 		return this.jdbcTemplate.query("select * from users order by id"
-				, new RowMapper<User>(){
-					public User mapRow(ResultSet rs , int rowNum) throws SQLException{
-						User user = new User();
-						user.setId(rs.getString("id"));
-						user.setName(rs.getString("name"));
-						user.setPassword(rs.getString("password"));
-						return user;
-					}
-					
-		});
+				, this.userMapper);
 				
 	}
 	
