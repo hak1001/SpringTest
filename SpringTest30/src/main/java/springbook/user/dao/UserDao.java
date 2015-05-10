@@ -1,18 +1,12 @@
 package springbook.user.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import javax.naming.spi.DirStateFactory.Result;
 import javax.sql.DataSource;
 
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
-import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
 
 import springbook.user.domain.User;
 
@@ -24,7 +18,6 @@ import springbook.user.domain.User;
 	public void setDataSource(DataSource dataSource) {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 		this.dataSource = dataSource;
-		
 	}
 	
 	public void add(final User user) throws ClassNotFoundException, SQLException{
@@ -33,30 +26,18 @@ import springbook.user.domain.User;
 	}
 	
 	public User get(String id) throws ClassNotFoundException, SQLException{
-		Connection c = this.dataSource.getConnection();
-		
-		PreparedStatement ps = c.prepareStatement(
-				"select * from users where id =?");
-		ps.setString(1, id);
-		
-		ResultSet rs = ps.executeQuery();
-		
-		User user = null;
-		if(rs.next()){
-			user = new User();
-			user.setId(rs.getString("id"));
-			user.setName(rs.getString("name"));
-			user.setPassword(rs.getString("password"));
-		}
-		
-		rs.close();
-		ps.close();
-		c.close();
-		
-		if(user == null) throw new EmptyResultDataAccessException(1);
-		
-		return user;
-
+		return this.jdbcTemplate.queryForObject("select * from users where id =?"
+				, new Object[] {id}
+				, new RowMapper<User>(){
+					public User mapRow(ResultSet rs , int rowNum) throws SQLException{
+						User user = new User();
+						user.setId(rs.getString("id"));
+						user.setName(rs.getString("name"));
+						user.setPassword(rs.getString("password"));
+						return user;
+					}
+				
+		});
 	}
 	
 	public void deleteAll() throws SQLException {
@@ -64,17 +45,7 @@ import springbook.user.domain.User;
 	}
 	
 	public int getCount() throws SQLException{
-		return this.jdbcTemplate.query(new PreparedStatementCreator() {
-			public PreparedStatement createPreparedStatement(Connection con)
-					throws SQLException {
-				return con.prepareStatement("select count(*) from users");
-			}
-		}, new ResultSetExtractor<Integer>() {
-			public Integer extractData(ResultSet rs) throws SQLException, DataAccessException{
-				rs.next();
-				return rs.getInt(1);
-			}
-		});
+		return this.jdbcTemplate.queryForInt("select count(*) from users");
 	}
 	
 }
