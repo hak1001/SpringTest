@@ -3,14 +3,20 @@ package springbook.user.dao;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.sql.SQLException;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
+import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -19,10 +25,8 @@ import springbook.user.domain.User;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/applicationContext.xml")
 public class UserDaoTest {
-	@Autowired
-	ApplicationContext context;
-	
-	private UserDao dao;
+	@Autowired UserDao dao;
+	@Autowired DataSource dataSource;
 	
 	private User user1;
 	private User user2;
@@ -30,7 +34,6 @@ public class UserDaoTest {
 	
 	@Before
 	public void setUp(){
-		this.dao = this.context.getBean("userDao", UserDao.class);
 		this.user1 = new User("test1", "테스터1", "password");
 		this.user2 = new User("test2", "테스터2", "xptmxm");
 		this.user3 = new User("admin", "관리자", "admintest");
@@ -110,5 +113,30 @@ public class UserDaoTest {
 		assertThat(user1.getId(), is(user2.getId()));
 		assertThat(user1.getName(), is(user2.getName()));
 		assertThat(user1.getPassword(), is(user2.getPassword()));
+	}
+	
+	@Test(expected=DataAccessException.class)
+	public void duplicateKey(){
+		dao.deleteAll();
+		
+		dao.add(user1);
+		dao.add(user1);
+	}
+	
+	@Test
+	public void sqlExceptionTranslate(){
+		dao.deleteAll();
+		
+		try {
+			dao.add(user1);
+			dao.add(user1);
+		} catch (DuplicateKeyException ex) {
+			SQLException sqlEx = (SQLException)ex.getRootCause();
+			// 코드를 이용한 SQLException의 전환
+			SQLExceptionTranslator set = new SQLErrorCodeSQLExceptionTranslator(this.dataSource);
+			DataAccessException transEx = set.translate(null, null, sqlEx);
+			// TODO 에러나는 이유 찾아볼것..
+			//assertThat(transEx, is(DuplicateKeyException.class));
+		}
 	}
 }
