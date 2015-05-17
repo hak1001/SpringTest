@@ -15,5 +15,9 @@
 		<property name="username" value="spring" />
 		<property name="password" value="book" />
 	</bean>
+	
+	<bean id="userService" class="springbook.user.service.Userservice">
+		<property name="userDao" ref="userDao" />
+	</bean>
 
 </beans>
