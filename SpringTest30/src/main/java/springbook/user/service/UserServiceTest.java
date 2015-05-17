@@ -4,6 +4,9 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.junit.matchers.JUnitMatchers.*;
 
+import static springbook.user.service.UserService.MIN_LOGCOUNT_FOR_SILVER;
+import static springbook.user.service.UserService.MIN_RECOMMEND_FOR_GOLD;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,10 +34,10 @@ public class UserServiceTest {
 	public void setUp(){
 		// Arrays.asList 배열을 리스트로 만들어주는 메소드
 		users = Arrays.asList(
-			new User("admin", "관리자", "p1", Level.BASIC, 49, 0),
-			new User("master", "마스터", "p2", Level.BASIC, 50, 0),
-			new User("suser1", "사용자1", "p3", Level.SILVER, 60, 29),
-			new User("tuser2", "사용자2", "p4", Level.SILVER, 60, 30),
+			new User("admin", "관리자", "p1", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER-1, 0),
+			new User("master", "마스터", "p2", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER, 0),
+			new User("suser1", "사용자1", "p3", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD-1),
+			new User("tuser2", "사용자2", "p4", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD),
 			new User("wuser3", "사용자3", "p5", Level.GOLD, 100, 100)
 		);
 	}
@@ -46,11 +49,22 @@ public class UserServiceTest {
 		
 		userService.upgradeLevels();
 		
-		checkLevel(users.get(0), Level.BASIC);
-		checkLevel(users.get(1), Level.SILVER);
-		checkLevel(users.get(2), Level.SILVER);
-		checkLevel(users.get(3), Level.GOLD);
-		checkLevel(users.get(4), Level.GOLD);
+		// 업그레이드 체크 메소드 변경
+		checkLevelUpgrade(users.get(0), false);
+		checkLevelUpgrade(users.get(1), true);
+		checkLevelUpgrade(users.get(2), false);
+		checkLevelUpgrade(users.get(3), true);
+		checkLevelUpgrade(users.get(4), false);
+	}
+	
+	// 다음 레벨로 업그레이드할지 true, false 판단
+	private void checkLevelUpgrade(User user, boolean upgraded){
+		User userUpdate = userDao.get(user.getId());
+		if(upgraded){
+			assertThat(userUpdate.getLevel(), is(user.getLevel().nextLevel()));
+		}else{
+			assertThat(userUpdate.getLevel(), is(user.getLevel()));
+		}
 	}
 	
 	private void checkLevel(User user, Level expectedLeve){
