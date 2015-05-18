@@ -1,14 +1,15 @@
 package springbook.user.service;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.junit.matchers.JUnitMatchers.*;
-
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static springbook.user.service.UserService.MIN_LOGCOUNT_FOR_SILVER;
 import static springbook.user.service.UserService.MIN_RECOMMEND_FOR_GOLD;
 
 import java.util.Arrays;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,9 +25,9 @@ import springbook.user.domain.User;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/test-applicationContext.xml")
 public class UserServiceTest {
-	@Autowired
-	UserService userService;
+	@Autowired UserService userService;
 	@Autowired UserDao userDao;
+	@Autowired DataSource dataSource;
 	
 	List<User> users;
 	
@@ -43,7 +44,7 @@ public class UserServiceTest {
 	}
 	
 	@Test
-	public void upgradeLevels(){
+	public void upgradeLevels() throws Exception{
 		userDao.deleteAll();
 		for(User user : users) userDao.add(user);
 		
@@ -67,12 +68,6 @@ public class UserServiceTest {
 		}
 	}
 	
-	private void checkLevel(User user, Level expectedLeve){
-		User userUpdate = userDao.get(user.getId());
-		assertThat(userUpdate.getLevel(), is(expectedLeve));
-				
-	}
-	
 	@Test
 	public void add(){
 		userDao.deleteAll();
@@ -89,5 +84,44 @@ public class UserServiceTest {
 		
 		assertThat(userWithLevelRead.getLevel(), is(userWithLevel.getLevel()));
 		assertThat(userWithoutLevelRead.getLevel(), is(userWithoutLevel.getLevel()));
+	}
+	
+	// 트랜잭션 테스트
+	@Test
+	public void upgradeAllOrNothing() throws Exception{
+		UserService testUserService = new TestUserService(users.get(3).getId());
+		testUserService.setUserDao(this.userDao);
+		testUserService.setDataSource(dataSource);
+		userDao.deleteAll();
+		for(User user : users) userDao.add(user);
+		
+		try {
+			testUserService.upgradeLevels();
+			fail("TestUserServiceException expected");
+		} catch (TestUserServiceException e) {
+		}
+		
+		// 예외가 발생하기 전에 레벨 변경이 있었던 사용자의 레벨이 처음 상태로 바뀌었나 확인 
+		checkLevelUpgrade(users.get(1), false);
+	}
+	
+	// 트랜잭션 테스트용 스태틱 클래스
+	static class TestUserService extends UserService{
+		private String id;
+		
+		// 예외를 발생시킬 User 오브젝트의 id지정
+		private TestUserService(String id){
+			this.id = id;
+		}
+		
+		protected void upgradeLevel(User user){
+			// 지정된 id의 User 오브젝트가 발견되는 예외발생하여 작업강제 중단..
+			if(user.getId().equals(this.id)) throw new TestUserServiceException();
+			super.upgradeLevel(user);
+		}
+	}
+	
+	static class TestUserServiceException extends RuntimeException{
+		
 	}
 }
