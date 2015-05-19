@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import static springbook.user.service.UserService.MIN_LOGCOUNT_FOR_SILVER;
 import static springbook.user.service.UserService.MIN_RECOMMEND_FOR_GOLD;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -15,7 +16,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.test.AssertThrows;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -48,9 +53,13 @@ public class UserServiceTest {
 	}
 	
 	@Test
+	@DirtiesContext // 컨텍스트의 DI설정을 변경하는 테스트
 	public void upgradeLevels() throws Exception{
 		userDao.deleteAll();
 		for(User user : users) userDao.add(user);
+		
+		MockMailSender mockmailSender = new MockMailSender();
+		userService.setMailSender(mockmailSender);
 		
 		userService.upgradeLevels();
 		
@@ -60,6 +69,11 @@ public class UserServiceTest {
 		checkLevelUpgrade(users.get(2), false);
 		checkLevelUpgrade(users.get(3), true);
 		checkLevelUpgrade(users.get(4), false);
+		
+		List<String> request = mockmailSender.getRequests();
+		assertThat(request.size(), is(2));
+		assertThat(request.get(0), is(users.get(1).getEmail()));
+		assertThat(request.get(1), is(users.get(3).getEmail()));
 	}
 	
 	// 다음 레벨로 업그레이드할지 true, false 판단
@@ -129,4 +143,27 @@ public class UserServiceTest {
 	static class TestUserServiceException extends RuntimeException{
 		
 	}
+	
+	static class MockMailSender implements MailSender{
+		private List<String> requests = new ArrayList<String>();
+		
+		public List<String> getRequests(){
+			return requests;
+		}
+		
+		public void send(SimpleMailMessage mailMessage) throws MailException{
+			requests.add(mailMessage.getTo()[0]); 
+			System.out.println("=================== SimpleMailMessage 메일발송 테스트 시작 ===================");
+			System.out.println("from === " + mailMessage.getFrom());
+			System.out.println("to === " + mailMessage.getTo()[0]);
+			System.out.println("subject === " + mailMessage.getSubject());
+			System.out.println("text === " + mailMessage.getText());
+			System.out.println("=================== SimpleMailMessage 메일발송 테스트 완료 ===================\n");
+		}
+		
+		public void send(SimpleMailMessage[] mailMessage) throws MailException{
+			
+		}
+	}
+	
 }
