@@ -2,6 +2,9 @@ package springbook.user.service;
 
 import java.util.List;
 
+import org.springframework.mail.MailSender;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -24,6 +27,12 @@ public class UserService {
 	
 	public void settransactionManager(PlatformTransactionManager transactionManager){
 		this.transactionManager = transactionManager;
+	}
+	
+	private MailSender mailSender;
+	
+	public void setMailSender(MailSender mailSender){
+		this.mailSender = mailSender;
 	}
 	
 	// 레벨 업그레이드 메소드
@@ -62,6 +71,17 @@ public class UserService {
 	protected void upgradeLevel(User user){
 		user.upgradeLevel();
 		userDao.update(user);
+		sendUpgradeEmail(user);
+	}
+	
+	private void sendUpgradeEmail(User user){
+		SimpleMailMessage mailMessage = new SimpleMailMessage();
+		mailMessage.setTo(user.getEmail());
+		mailMessage.setFrom("hak1001@naver.com");
+		mailMessage.setSubject("Upgrade 안내");
+		mailMessage.setText(user.getName() + "님의 등급이 " + user.getLevel().name() + "(으)로 업그레이드 되었습니다.");
+		
+		this.mailSender.send(mailMessage);
 	}
 	
 	// 사용자 추가 메소드
