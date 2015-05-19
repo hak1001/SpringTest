@@ -37,11 +37,11 @@ public class UserServiceTest {
 	public void setUp(){
 		// Arrays.asList 배열을 리스트로 만들어주는 메소드
 		users = Arrays.asList(
-			new User("admin", "관리자", "p1", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER-1, 0),
-			new User("master", "마스터", "p2", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER, 0),
-			new User("suser1", "사용자1", "p3", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD-1),
-			new User("tuser2", "사용자2", "p4", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD),
-			new User("wuser3", "사용자3", "p5", Level.GOLD, 100, 100)
+			new User("admin", "관리자", "p1", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER-1, 0, "admin@test.com"),
+			new User("master", "마스터", "p2", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER, 0, "master@test.com"),
+			new User("suser1", "사용자1", "p3", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD-1, "suer1@test.com"),
+			new User("tuser2", "사용자2", "p4", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD, "tuser@test.com"),
+			new User("wuser3", "사용자3", "p5", Level.GOLD, 100, 100, "wuser3@test.com")
 		);
 	}
 	

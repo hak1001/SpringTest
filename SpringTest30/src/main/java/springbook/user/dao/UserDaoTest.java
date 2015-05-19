@@ -24,7 +24,7 @@ import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="/applicationContext.xml")
+@ContextConfiguration(locations="/test-applicationContext.xml")
 public class UserDaoTest {
 	@Autowired UserDao dao;
 	@Autowired DataSource dataSource;
@@ -37,9 +37,9 @@ public class UserDaoTest {
 	// 테스트용 사용자 정보 객체 생성. 
 	@Before
 	public void setUp(){
-		this.user1 = new User("test1", "테스터1", "password", Level.BASIC, 1, 0);
-		this.user2 = new User("test2", "테스터2", "xptmxm", Level.SILVER, 55, 10);
-		this.user3 = new User("admin", "관리자", "admintest", Level.GOLD, 100, 40);
+		this.user1 = new User("test1", "테스터1", "password", Level.BASIC, 1, 0, "test1@test.com");
+		this.user2 = new User("test2", "테스터2", "xptmxm", Level.SILVER, 55, 10, "test2@test.com");
+		this.user3 = new User("admin", "관리자", "admintest", Level.GOLD, 100, 40, "admin@test.com");
 	}
 	
 	// 사용자 정보 등록 테스트
