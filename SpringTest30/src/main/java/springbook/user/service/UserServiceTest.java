@@ -3,14 +3,12 @@ package springbook.user.service;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import static springbook.user.service.UserService.MIN_LOGCOUNT_FOR_SILVER;
-import static springbook.user.service.UserService.MIN_RECOMMEND_FOR_GOLD;
+import static springbook.user.service.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
+import static springbook.user.service.UserServiceImpl.MIN_RECOMMEND_FOR_GOLD;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.test.AssertThrows;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -33,8 +30,8 @@ import springbook.user.domain.User;
 @ContextConfiguration(locations="/test-applicationContext.xml")
 public class UserServiceTest {
 	@Autowired UserService userService;
+	@Autowired UserServiceImpl userServiceImpl;
 	@Autowired UserDao userDao;
-	@Autowired DataSource dataSource;
 	@Autowired PlatformTransactionManager transactionManager;
 	@Autowired MailSender mailSender;
 	
@@ -59,9 +56,9 @@ public class UserServiceTest {
 		for(User user : users) userDao.add(user);
 		
 		MockMailSender mockmailSender = new MockMailSender();
-		userService.setMailSender(mockmailSender);
+		userServiceImpl.setMailSender(mockmailSender);
 		
-		userService.upgradeLevels();
+		userServiceImpl.upgradeLevels();
 		
 		// 업그레이드 체크 메소드 변경
 		checkLevelUpgrade(users.get(0), false);
@@ -107,15 +104,19 @@ public class UserServiceTest {
 	// 트랜잭션 테스트
 	@Test
 	public void upgradeAllOrNothing() throws Exception{
-		UserService testUserService = new TestUserService(users.get(3).getId());
+		TestUserService testUserService = new TestUserService(users.get(3).getId());
 		testUserService.setUserDao(this.userDao);
-		testUserService.settransactionManager(transactionManager);
 		testUserService.setMailSender(mailSender);
+		
+		UserServiceTx txUserService = new UserServiceTx();
+		txUserService.setTransactionManager(transactionManager);
+		txUserService.setUserService(testUserService);
+		
 		userDao.deleteAll();
 		for(User user : users) userDao.add(user);
 		
 		try {
-			testUserService.upgradeLevels();
+			txUserService.upgradeLevels();
 			fail("TestUserServiceException expected");
 		} catch (TestUserServiceException e) {
 		}
@@ -125,7 +126,7 @@ public class UserServiceTest {
 	}
 	
 	// 트랜잭션 테스트용 스태틱 클래스
-	static class TestUserService extends UserService{
+	static class TestUserService extends UserServiceImpl{
 		private String id;
 		
 		// 예외를 발생시킬 User 오브젝트의 id지정
