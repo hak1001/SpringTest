@@ -52,25 +52,35 @@ public class UserServiceTest {
 	@Test
 	@DirtiesContext // 컨텍스트의 DI설정을 변경하는 테스트
 	public void upgradeLevels() throws Exception{
-		userDao.deleteAll();
-		for(User user : users) userDao.add(user);
+		UserServiceImpl userServiceImpl = new UserServiceImpl();
 		
+		// 1. 레벨 업그레이드 확인을 위해 목 오브젝트 DI
+		MockUserDao mockUserDao = new MockUserDao(this.users);
+		userServiceImpl.setUserDao(mockUserDao);
+		
+		// 2. 메일 발송 여부 확인을 위해 목 오베젝트 DI
 		MockMailSender mockmailSender = new MockMailSender();
 		userServiceImpl.setMailSender(mockmailSender);
 		
+		// 3. 테스트 대상 실행
 		userServiceImpl.upgradeLevels();
+
+		// 4. 목 오브젝트를 이용한 결과 확인(레벨 업그레이드)
+		List<User> updated = mockUserDao.getUpdated();
+		assertThat(updated.size(), is(2));
+		checkUserAndLevel(updated.get(0), "master", Level.SILVER);
+		checkUserAndLevel(updated.get(1), "tuser2", Level.GOLD);
 		
-		// 업그레이드 체크 메소드 변경
-		checkLevelUpgrade(users.get(0), false);
-		checkLevelUpgrade(users.get(1), true);
-		checkLevelUpgrade(users.get(2), false);
-		checkLevelUpgrade(users.get(3), true);
-		checkLevelUpgrade(users.get(4), false);
-		
+		// 5. 목 오브젝트를 이용한 결과 확인(메일 발송)
 		List<String> request = mockmailSender.getRequests();
 		assertThat(request.size(), is(2));
 		assertThat(request.get(0), is(users.get(1).getEmail()));
 		assertThat(request.get(1), is(users.get(3).getEmail()));
+	}
+	
+	private void checkUserAndLevel(User updated, String expectedId, Level expectedLevel){
+		assertThat(updated.getId(), is(expectedId));
+		assertThat(updated.getLevel(), is(expectedLevel));
 	}
 	
 	// 다음 레벨로 업그레이드할지 true, false 판단
@@ -165,6 +175,35 @@ public class UserServiceTest {
 		public void send(SimpleMailMessage[] mailMessage) throws MailException{
 			
 		}
+	}
+	
+	static class MockUserDao implements UserDao{
+		private List<User> users; // 레벨 업그레이드 후보 User 오브젝트 목록
+		private List<User> updated = new ArrayList(); // 업그레이드 대상 오브젝트를 저장할 목록
+		
+		private MockUserDao(List<User> users){
+			this.users = users;
+		}
+		
+		public List<User> getUpdated(){
+			return this.updated;
+		}
+		
+		// 스텁 기능 제공
+		public List<User> getAll(){
+			return this.users;
+		}
+		
+		// 목 오브젝트 기능 제공 
+		public void update(User user){
+			updated.add(user);
+		}
+		
+		// 사용하지 않는 메소드는 UnsupportedOperationException을 던지게 해서 지원하지 않는 기능이라는 예외가 발생하도록 처리..
+		public void add(User user) {throw new UnsupportedOperationException(); }
+		public void deleteAll() {throw new UnsupportedOperationException(); }
+		public User get(String id) {throw new UnsupportedOperationException(); }
+		public int getCount() {throw new UnsupportedOperationException(); }
 	}
 	
 }
