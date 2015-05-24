@@ -40,13 +40,8 @@ public class UserService {
 		// 스프링 트랜잭션 추상 인터페이스
 		TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 		try {
-			List<User> users = userDao.getAll();
-			for(User user : users){
-				// 업그레이드 가능 확인용 메소드와 업그레이드 작업 메소드로 리팩토링
-				if(canUpgradeLevel(user)){
-					upgradeLevel(user);
-				}
-			}
+			// 비즈니스 로직과 트랜잭션 경계설정 분리
+			upgradeLevelsInternal();
 			transactionManager.commit(status);
 		} catch (Exception e) {
 			transactionManager.rollback(status);
@@ -54,6 +49,18 @@ public class UserService {
 		} 
 		
 	}
+	
+	// 레벨 업그레이드 비즈니스 로직 메소드
+	private void upgradeLevelsInternal(){
+		List<User> users = userDao.getAll();
+		for(User user : users){
+			// 업그레이드 가능 확인용 메소드와 업그레이드 작업 메소드로 리팩토링
+			if(canUpgradeLevel(user)){
+				upgradeLevel(user);
+			}
+		}
+	}
+	
 	
 	// 레벨 업그레이드 가능 확인 메소드
 	private boolean canUpgradeLevel(User user){
