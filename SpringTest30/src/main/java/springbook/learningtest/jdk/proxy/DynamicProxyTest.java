@@ -52,15 +52,23 @@ public class DynamicProxyTest {
 	
 	// InvocationHandler 구현 클래스
 	static class UppercaseHandler implements InvocationHandler{
-		Hello target;
+		// 모든 종류의 인터페이스를 구현한 타깃에도 적용 가능하도록 Object 타입으로 수정
+		Object target;	
 		
-		public UppercaseHandler(Hello target){
+		private UppercaseHandler(Hello target){
 			this.target = target;
 		}
 		
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable{
-			String ret = (String)method.invoke(target, args);	// 타깃으로 위임, 인터페이스의 메소드 호출에 모두 적용됨.
-			return ret.toUpperCase();	// 부가기능 제공
+			Object ret = method.invoke(target, args);	// 타깃으로 위임, 인터페이스의 메소드 호출에 모두 적용됨.
+			
+			// 호출한 메소드의 리턴 타입이 String인 경우와 메소드 이름이 일치하는 경우만 부가기능 적용
+			if(ret instanceof String && method.getName().startsWith("say")){
+				return ((String)ret).toUpperCase();
+			}else{
+				return ret;	// 부가기능 제공
+			}
+			
 		}
 	}
 	
