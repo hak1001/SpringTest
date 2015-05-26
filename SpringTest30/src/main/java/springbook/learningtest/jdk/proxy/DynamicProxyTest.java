@@ -10,9 +10,12 @@ import java.lang.reflect.Proxy;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
+import org.springframework.aop.ClassFilter;
+import org.springframework.aop.Pointcut;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.aop.support.NameMatchMethodPointcut;
+
 
 public class DynamicProxyTest {
 	@Test
@@ -70,6 +73,51 @@ public class DynamicProxyTest {
 		assertThat(proxiedHello.sayHello("hak1001"), is("HELLO HAK1001"));
 		assertThat(proxiedHello.sayHi("hak1001"), is("HI HAK1001"));
 		assertThat(proxiedHello.sayThankYou("hak1001"), is("ThankYou hak1001"));
+	}
+	
+	@Test	
+	public void classNamePointcutAdvisor(){
+		// 포인트컷 준비
+		NameMatchMethodPointcut classMethodPointcut = new NameMatchMethodPointcut(){
+			// 익명 내부 클래스 방식으로 클래스 정의
+			public ClassFilter getClassFilter(){
+				return new ClassFilter() {
+					@Override
+					public boolean matches(Class<?> clazz) {
+						// TODO Auto-generated method stub
+						return clazz.getSimpleName().startsWith("HelloT");
+					}
+				};
+			}
+		};
+		// sayH로 시작하는 메소드 이름을 가진 메소드만 선정
+		classMethodPointcut.setMappedName("sayH*");
+		
+		// 테스트
+		checkAdviced(new HelloTarget(), classMethodPointcut, true);
+		
+		class HelloWorld extends HelloTarget {};
+		checkAdviced(new HelloWorld(), classMethodPointcut, false);
+		
+		class HelloToby extends HelloTarget {};
+		checkAdviced(new HelloToby(), classMethodPointcut, true);
+	}
+	
+	private void checkAdviced(Object target, Pointcut pointcut, boolean adviced){
+		ProxyFactoryBean pfBean = new ProxyFactoryBean(); 
+		pfBean.setTarget(target);
+		pfBean.addAdvisor(new DefaultPointcutAdvisor(pointcut, new UppercaseAdvice()));
+		Hello proxiedHello = (Hello)pfBean.getObject();
+		
+		if(adviced){
+			assertThat(proxiedHello.sayHello("hak1001"), is("HELLO HAK1001"));
+			assertThat(proxiedHello.sayHi("hak1001"), is("HI HAK1001"));
+			assertThat(proxiedHello.sayThankYou("hak1001"), is("ThankYou hak1001"));
+		}else{
+			assertThat(proxiedHello.sayHello("hak1001"), is("Hello hak1001"));
+			assertThat(proxiedHello.sayHi("hak1001"), is("Hi hak1001"));
+			assertThat(proxiedHello.sayThankYou("hak1001"), is("ThankYou hak1001"));
+		}
 	}
 	
 	static class HelloUppercase implements Hello{
