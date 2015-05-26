@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import static springbook.user.service.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
 import static springbook.user.service.UserServiceImpl.MIN_RECOMMEND_FOR_GOLD;
 
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mail.MailException;
@@ -58,7 +58,7 @@ public class UserServiceTest {
 		);
 	}
 	
-	@Test
+	//@Test
 	@DirtiesContext // 컨텍스트의 DI설정을 변경하는 테스트
 	public void upgradeLevels() throws Exception{
 		UserServiceImpl userServiceImpl = new UserServiceImpl();
@@ -102,7 +102,7 @@ public class UserServiceTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void mockUpgradeLevels() throws Exception{
 		UserServiceImpl userServiceImpl = new UserServiceImpl();
 		
@@ -130,7 +130,7 @@ public class UserServiceTest {
 		assertThat(mailMessages.get(1).getTo()[0], is(users.get(3).getEmail()));
 	}
 	
-	@Test
+	//@Test
 	public void add(){
 		userDao.deleteAll();
 		
@@ -156,7 +156,7 @@ public class UserServiceTest {
 		testUserService.setUserDao(this.userDao);
 		testUserService.setMailSender(mailSender);
 		
-		TxProxyFactoryBean txProxyFactoryBean = context.getBean("&userService", TxProxyFactoryBean.class);	// 팩토리 빈 자체를 가져와서 테스트용 타깃 주입
+		ProxyFactoryBean txProxyFactoryBean = context.getBean("&userService", ProxyFactoryBean.class);	// 팩토리 빈 자체를 가져와서 테스트용 타깃 주입
 		txProxyFactoryBean.setTarget(testUserService);
 		UserService txUserService = (UserService)txProxyFactoryBean.getObject();	// 변경된 타깃 설정을 이용해서 트랜잭션 다이내믹 프록시 오브젝트를 다시 생성.
 		
