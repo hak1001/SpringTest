@@ -11,6 +11,8 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactoryBean;
+import org.springframework.aop.support.DefaultPointcutAdvisor;
+import org.springframework.aop.support.NameMatchMethodPointcut;
 
 public class DynamicProxyTest {
 	@Test
@@ -50,6 +52,24 @@ public class DynamicProxyTest {
 			return ret.toUpperCase();
 					
 		}
+	}
+	
+	@Test
+	public void pointcutAdvisor(){
+		ProxyFactoryBean pfBean = new ProxyFactoryBean();
+		pfBean.setTarget(new HelloTarget());
+		
+		NameMatchMethodPointcut pointcut = new NameMatchMethodPointcut();
+		pointcut.setMappedName("sayH*");	// 이름 비교조건 설정, sayH로 시작하는 모든 메소드를 선택하게 한다.
+		
+		// 포인트컷과 어드바이스를 Advisor로 묶어서 한 번에 추가
+		pfBean.addAdvisor(new DefaultPointcutAdvisor(pointcut, new UppercaseAdvice()));
+		
+		Hello proxiedHello = (Hello)pfBean.getObject();
+		
+		assertThat(proxiedHello.sayHello("hak1001"), is("HELLO HAK1001"));
+		assertThat(proxiedHello.sayHi("hak1001"), is("HI HAK1001"));
+		assertThat(proxiedHello.sayThankYou("hak1001"), is("ThankYou hak1001"));
 	}
 	
 	static class HelloUppercase implements Hello{
