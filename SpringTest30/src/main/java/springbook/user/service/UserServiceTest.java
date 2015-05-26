@@ -19,7 +19,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mail.MailException;
@@ -39,10 +38,9 @@ import springbook.user.domain.User;
 public class UserServiceTest {
 	@Autowired ApplicationContext context;
 	@Autowired UserService userService;
-	@Autowired UserServiceImpl userServiceImpl;
+	@Autowired UserService testUserService;
 	@Autowired UserDao userDao;
 	@Autowired PlatformTransactionManager transactionManager;
-	@Autowired MailSender mailSender;
 	
 	List<User> users;
 	
@@ -58,7 +56,7 @@ public class UserServiceTest {
 		);
 	}
 	
-	//@Test
+	@Test
 	@DirtiesContext // 컨텍스트의 DI설정을 변경하는 테스트
 	public void upgradeLevels() throws Exception{
 		UserServiceImpl userServiceImpl = new UserServiceImpl();
@@ -102,7 +100,7 @@ public class UserServiceTest {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void mockUpgradeLevels() throws Exception{
 		UserServiceImpl userServiceImpl = new UserServiceImpl();
 		
@@ -130,7 +128,7 @@ public class UserServiceTest {
 		assertThat(mailMessages.get(1).getTo()[0], is(users.get(3).getEmail()));
 	}
 	
-	//@Test
+	@Test
 	public void add(){
 		userDao.deleteAll();
 		
@@ -152,19 +150,11 @@ public class UserServiceTest {
 	@Test
 	@DirtiesContext // 다이내믹 프록시 팩토리 빈을 직접 만들어 사용할 때는 없앴다가 다시 등장한 컨텍스트 무효화 애노테이션
 	public void upgradeAllOrNothing() throws Exception{
-		TestUserService testUserService = new TestUserService(users.get(3).getId());
-		testUserService.setUserDao(this.userDao);
-		testUserService.setMailSender(mailSender);
-		
-		ProxyFactoryBean txProxyFactoryBean = context.getBean("&userService", ProxyFactoryBean.class);	// 팩토리 빈 자체를 가져와서 테스트용 타깃 주입
-		txProxyFactoryBean.setTarget(testUserService);
-		UserService txUserService = (UserService)txProxyFactoryBean.getObject();	// 변경된 타깃 설정을 이용해서 트랜잭션 다이내믹 프록시 오브젝트를 다시 생성.
-		
 		userDao.deleteAll();
 		for(User user : users) userDao.add(user);
 		
 		try {
-			txUserService.upgradeLevels();
+			this.testUserService.upgradeLevels();
 			fail("TestUserServiceException expected");
 		} catch (TestUserServiceException e) {
 		}
@@ -174,13 +164,8 @@ public class UserServiceTest {
 	}
 	
 	// 트랜잭션 테스트용 스태틱 클래스
-	static class TestUserService extends UserServiceImpl{
-		private String id;
-		
-		// 예외를 발생시킬 User 오브젝트의 id지정
-		private TestUserService(String id){
-			this.id = id;
-		}
+	static class TestUserServiceImpl extends UserServiceImpl{
+		private String id = "tuser2";
 		
 		protected void upgradeLevel(User user){
 			// 지정된 id의 User 오브젝트가 발견되는 예외발생하여 작업강제 중단..
@@ -191,6 +176,12 @@ public class UserServiceTest {
 	
 	static class TestUserServiceException extends RuntimeException{
 		
+	}
+	
+	@Test
+	public void advisorAutoProxyCreator(){
+		// 프록시로 변경된 오브젝트인지 확인
+		assertThat(testUserService, is(java.lang.reflect.Proxy.class));
 	}
 	
 	static class MockMailSender implements MailSender{
