@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
@@ -163,6 +164,11 @@ public class UserServiceTest {
 		checkLevelUpgrade(users.get(1), false);
 	}
 	
+	@Test(expected=TransientDataAccessResourceException.class)
+	public void readOnlyTransactionAttribute(){
+		testUserService.getAll();
+	}
+	
 	// 트랜잭션 테스트용 스태틱 클래스
 	static class TestUserService extends UserServiceImpl{
 		private String id = "tuser2";
@@ -171,6 +177,16 @@ public class UserServiceTest {
 			// 지정된 id의 User 오브젝트가 발견되는 예외발생하여 작업강제 중단..
 			if(user.getId().equals(this.id)) throw new TestUserServiceException();
 			super.upgradeLevel(user);
+		}
+		
+		// 읽기전용 트랜잭션의 대상인 get으로 시작하는 메소드 오버라이드
+		@Override
+		public List<User> getAll(){
+			for(User user : super.getAll()){
+				super.update(user);	// 강제로 쓰기를 시도. get*메소드는 읽기전용 속성으로 인한 예외 발생
+				
+			}
+			return null;	// 메소드가 끝나기 전에 예외가 발생하지만 컴파일 에러 방지. 
 		}
 	}
 	
