@@ -29,8 +29,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
@@ -59,7 +59,7 @@ public class UserServiceTest {
 		);
 	}
 	
-	//@Test
+	@Test
 	@DirtiesContext // 컨텍스트의 DI설정을 변경하는 테스트
 	public void upgradeLevels() throws Exception{
 		UserServiceImpl userServiceImpl = new UserServiceImpl();
@@ -103,7 +103,7 @@ public class UserServiceTest {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void mockUpgradeLevels() throws Exception{
 		UserServiceImpl userServiceImpl = new UserServiceImpl();
 		
@@ -131,7 +131,7 @@ public class UserServiceTest {
 		assertThat(mailMessages.get(1).getTo()[0], is(users.get(3).getEmail()));
 	}
 	
-	//@Test
+	@Test
 	public void add(){
 		userDao.deleteAll();
 		
@@ -150,7 +150,7 @@ public class UserServiceTest {
 	}
 	
 	// 트랜잭션 테스트
-	//@Test
+	@Test
 	@DirtiesContext // 다이내믹 프록시 팩토리 빈을 직접 만들어 사용할 때는 없앴다가 다시 등장한 컨텍스트 무효화 애노테이션
 	public void upgradeAllOrNothing() throws Exception{
 		userDao.deleteAll();
@@ -166,25 +166,17 @@ public class UserServiceTest {
 		checkLevelUpgrade(users.get(1), false);
 	}
 	
-	//@Test(expected=TransientDataAccessResourceException.class)
+	@Test(expected=TransientDataAccessResourceException.class)
 	public void readOnlyTransactionAttribute(){
 		testUserService.getAll();
 	}
 	
 	@Test
+	@Transactional(propagation=Propagation.NEVER)	// 트랜잭션이 시작되지 않는다.
 	public void transactionSync(){
-		// 테스트 안의 모든 작업을 하나의 트랜잭션으로 통합한다. 
-		DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
-		TransactionStatus txstatus = transactionManager.getTransaction(txDefinition);
-		
-		try {
-			userService.deleteAll();
-			userService.add(users.get(0));
-			userService.add(users.get(1));
-		} 
-			finally{
-				transactionManager.rollback(txstatus);
-		}
+		userService.deleteAll();
+		userService.add(users.get(0));
+		userService.add(users.get(1));
 	}
 	
 	// 트랜잭션 테스트용 스태틱 클래스
@@ -212,7 +204,7 @@ public class UserServiceTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void advisorAutoProxyCreator(){
 		// 프록시로 변경된 오브젝트인지 확인
 		assertThat(testUserService, is(java.lang.reflect.Proxy.class));
