@@ -13,6 +13,8 @@ import springbook.user.sqlservice.jaxb.SqlType;
 import springbook.user.sqlservice.jaxb.Sqlmap;
 
 public class OxmSqlService implements SqlService{
+	// SqlService의 실제 구현 부분을 위윔할 대상인 BaseSqlService를 인스턴스 변수로 정의
+	private final BaseSqlService baseSqlService = new BaseSqlService();
 	// OxmSqlService와 OxmSqlReader는 강하게 결합돼서 하나의 빈으로 등록되고 한 번에 설정할 수 있다. 
 	private final OxmSqlReader oxmSqlReader = new OxmSqlReader();
 	
@@ -31,15 +33,14 @@ public class OxmSqlService implements SqlService{
 	
 	@PostConstruct
 	public void loadSql(){
-		this.oxmSqlReader.read(this.sqlRegistry);
+		this.baseSqlService.setSqlReader(this.oxmSqlReader);
+		this.baseSqlService.setSqlRegistry(this.sqlRegistry);
+		
+		this.baseSqlService.loadSql();
 	}
 	
 	public String getSql(String key) throws SqlRetrievalFailureException{
-		try {
-			return this.sqlRegistry.findSql(key);
-		} catch (SqlNotFoundException e) {
-			throw new SqlRetrievalFailureException(e);
-		}
+		return this.baseSqlService.getSql(key);
 	}
 	
 	private class OxmSqlReader implements SqlReader{
