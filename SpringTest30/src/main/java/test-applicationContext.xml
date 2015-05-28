@@ -26,7 +26,9 @@
 		<property name="sqlService" ref="sqlService" />
 	</bean>
 	
-	<bean id="sqlService" class="springbook.user.sqlservice.BaseSqlService" >
+	<!-- sql service  -->
+	<bean id="sqlService" class="springbook.user.sqlservice.DefaultSqlService" />
+	<!-- <bean id="sqlService" class="springbook.user.sqlservice.BaseSqlService" >
 		<property name="sqlReader" ref="sqlReader" />
 		<property name="sqlRegistry" ref="sqlRegistry" />
 	</bean>
@@ -35,7 +37,7 @@
 	
 	<bean id="sqlReader" class="springbook.user.sqlservice.JaxbXmlSqlReader" >
 		<property name="sqlmapFile" value="sqlmap.xml" />
-	</bean>
+	</bean> -->
 	
 	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name = "dataSource" ref="dataSource" />
