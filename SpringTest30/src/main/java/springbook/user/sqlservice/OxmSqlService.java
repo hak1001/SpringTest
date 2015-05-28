@@ -6,6 +6,8 @@ import javax.annotation.PostConstruct;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.oxm.Unmarshaller;
 
 import springbook.user.dao.UserDao;
@@ -27,8 +29,8 @@ public class OxmSqlService implements SqlService{
 		this.oxmSqlReader.setUnmarshaller(unmarshaller);
 	}
 	
-	public void setSqlmapFile(String salmapFile){
-		this.oxmSqlReader.setSqlmapFile(salmapFile);
+	public void setSqlmap(Resource salmap){
+		this.oxmSqlReader.setSqlmap(salmap);
 	}
 	
 	@PostConstruct
@@ -45,27 +47,26 @@ public class OxmSqlService implements SqlService{
 	
 	private class OxmSqlReader implements SqlReader{
 		private Unmarshaller unmarshaller;
-		private final static String DEFAULT_SQLMAP_FILE = "sqlmap.xml";
-		private String sqlmapFile = DEFAULT_SQLMAP_FILE;
+		private Resource sqlmap = new ClassPathResource("sqlmap.xml", UserDao.class);
 		
 		public void setUnmarshaller(Unmarshaller unmarshaller) {
 			this.unmarshaller = unmarshaller;
 		}
 
-		public void setSqlmapFile(String sqlmapFile) {
-			this.sqlmapFile = sqlmapFile;
+		public void setSqlmap(Resource sqlmap) {
+			this.sqlmap = sqlmap;
 		}
 		
 		public void read(SqlRegistry sqlRegistry){
 			try {
-				Source source = new StreamSource(UserDao.class.getResourceAsStream(sqlmapFile));
+				Source source = new StreamSource(sqlmap.getInputStream());
 				Sqlmap sqlmap = (Sqlmap)this.unmarshaller.unmarshal(source);
 				for(SqlType sql : sqlmap.getSql()){
 					sqlRegistry.registerSql(sql.getKey(), sql.getValue());
 				}
 			} catch (IOException e) {
 				// 언마샬 작업 중 IO 에러가 났다면 설정을 통해 제공받은 XML파일 일므이나 정보가 잘못됐을 가능성이 제일 높다. 이런 경우에 가장 적합한 런타임 에러 중 하나인 IllegalArgumentException으로 포장해서 던진다.				
-				throw new IllegalArgumentException(this.sqlmapFile + "을 가져올 수 없습니다.", e);
+				throw new IllegalArgumentException(this.sqlmap.getFilename() + "을 가져올 수 없습니다.", e);
 			}
 		}
 	}
