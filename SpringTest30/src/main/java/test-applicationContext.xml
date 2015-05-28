@@ -4,10 +4,13 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:aop="http://www.springframework.org/schema/aop"
 	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
 						http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 						http://www.springframework.org/schema/aop
 						http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+						http://www.springframework.org/schema/context
+						http://www.springframework.org/schema/context/spring-context-3.0.xsd
 						http://www.springframework.org/schema/tx
 						http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
 							
@@ -24,6 +27,7 @@
 	</bean>
 	
 	<bean id="sqlService" class="springbook.user.sqlservice.XmlSqlService" >
+		<property name="sqlmapFile" value="sqlmap.xml"></property>
 	</bean>
 	
 	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
@@ -35,7 +39,11 @@
 		<property name = "dataSource" ref="dataSource" />
 	</bean> -->
 	
+	<!-- @Transactional이 붙은 타입과 메소드에 트랜잭션 부가기능을 담은 프록시를 추가하도록 만들어주는 후처리기 -->
 	<tx:annotation-driven/>
+	
+	<!-- 코드의 애노테이션을 이용해서 부가적인 빈 설정 또는 초기화 작업을 해주는 후처리기  -->
+	<context:annotation-config />
 	
 	<!-- <aop:config>
 		<aop:advisor advice-ref="transactionAdvice" pointcut="bean(*Service)"/>
