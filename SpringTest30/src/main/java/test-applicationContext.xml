@@ -13,18 +13,13 @@
 						http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd">
 						
 	<!-- 코드의 애노테이션을 이용해서 부가적인 빈 설정 또는 초기화 작업을 해주는 후처리기  -->
-	<context:annotation-config />						
+	<!-- <context:annotation-config /> -->						
 							
 	<bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource" >
 		<property name="driverClass" value="com.mysql.jdbc.Driver" />
 		<property name="url" value="jdbc:mysql://localhost/springbook?characterEncoding=UTF-8" />
 		<property name="username" value="spring" />
 		<property name="password" value="book" />
-	</bean>
-	
-	<bean id="userDao" class="springbook.user.dao.UserDaoJdbc">
-		<property name="dataSource" ref="dataSource" />
-		<property name="sqlService" ref="sqlService" />
 	</bean>
 	
 	<!-- sql service  -->
@@ -68,6 +63,7 @@
 		<property name = "dataSource" ref="dataSource" />
 	</bean> -->
 	
+	<!-- aop -->
 	<!-- @Transactional이 붙은 타입과 메소드에 트랜잭션 부가기능을 담은 프록시를 추가하도록 만들어주는 후처리기 -->
 	<tx:annotation-driven/>
 	
@@ -81,13 +77,6 @@
 			<tx:method name="*" propagation="REQUIRED"/>
 		</tx:attributes>
 	</tx:advice> -->
-	
-	<!-- 
-	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
-		<property name="host" value="mail.server.com" />
-	</bean>
-	 -->
-	<bean id="mailSender" class="springbook.user.service.DummyMailSender" />
 	
 	<!-- aop -->
 	<!--
@@ -106,10 +95,24 @@
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>
 	 -->
+	 
+	<!-- application components -->
+ 	<bean id="userDao" class="springbook.user.dao.UserDaoJdbc">
+		<property name="dataSource" ref="dataSource" />
+		<property name="sqlService" ref="sqlService" />
+	</bean>
+	
 	<bean id="userService" class="springbook.user.service.UserServiceImpl">
 		<property name="userDao" ref="userDao" />
 		<property name="mailSender" ref="mailSender" />	
 	</bean>
 	
 	<bean id="testUserService" class="springbook.user.service.UserServiceTest$TestUserService" parent="userService" />
+	
+	<!-- 
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="mail.server.com" />
+	</bean>
+	 -->
+	<bean id="mailSender" class="springbook.user.service.DummyMailSender" />
 </beans>
