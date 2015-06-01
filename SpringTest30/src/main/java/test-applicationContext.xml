@@ -15,12 +15,12 @@
 	<!-- 코드의 애노테이션을 이용해서 부가적인 빈 설정 또는 초기화 작업을 해주는 후처리기  -->
 	<!-- <context:annotation-config /> -->						
 							
-	<bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource" >
+	<!-- <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource" >
 		<property name="driverClass" value="com.mysql.jdbc.Driver" />
 		<property name="url" value="jdbc:mysql://localhost/springbook?characterEncoding=UTF-8" />
 		<property name="username" value="spring" />
 		<property name="password" value="book" />
-	</bean>
+	</bean> -->
 	
 	<!-- sql service  -->
 	<bean id="sqlService" class="springbook.user.sqlservice.OxmSqlService" >
