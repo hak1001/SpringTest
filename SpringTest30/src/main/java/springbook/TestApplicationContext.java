@@ -12,7 +12,6 @@ import com.mysql.jdbc.Driver;
 @Configuration
 @ImportResource("/test-applicationContext.xml")
 public class TestApplicationContext {
-
 	@Bean
 	public DataSource dataSource(){
 		SimpleDriverDataSource dataSource = new SimpleDriverDataSource();
