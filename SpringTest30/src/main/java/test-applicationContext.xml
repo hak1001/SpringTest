@@ -65,7 +65,7 @@
 	
 	<!-- aop -->
 	<!-- @Transactional이 붙은 타입과 메소드에 트랜잭션 부가기능을 담은 프록시를 추가하도록 만들어주는 후처리기 -->
-	<tx:annotation-driven/>
+	<!-- <tx:annotation-driven/> -->
 	
 	<!-- <aop:config>
 		<aop:advisor advice-ref="transactionAdvice" pointcut="bean(*Service)"/>
