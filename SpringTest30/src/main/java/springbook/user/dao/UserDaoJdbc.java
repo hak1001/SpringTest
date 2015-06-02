@@ -19,18 +19,14 @@ import springbook.user.sqlservice.SqlService;
 
 @Repository
 public class UserDaoJdbc implements UserDao {
+	private JdbcTemplate jdbcTemplate;
 	@Autowired
 	public void setDataSource(DataSource dataSource) {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 	
-	private JdbcTemplate jdbcTemplate;
-	
-	private SqlService sqlService;
 	@Autowired
-	public void setSqlService(SqlService sqlService){
-		this.sqlService = sqlService;
-	}
+	private SqlService sqlService;
 	
 	// 인스턴스 변수 userMapper에 매핑용 콜백 오브젝트 
 	private RowMapper<User> userMapper = 
