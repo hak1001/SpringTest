@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -15,6 +16,7 @@ import springbook.user.domain.User;
 import springbook.user.sqlservice.SqlService;
 
 public class UserDaoJdbc implements UserDao {
+	@Autowired
 	public void setDataSource(DataSource dataSource) {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
@@ -22,7 +24,7 @@ public class UserDaoJdbc implements UserDao {
 	private JdbcTemplate jdbcTemplate;
 	
 	private SqlService sqlService;
-	
+	@Autowired
 	public void setSqlService(SqlService sqlService){
 		this.sqlService = sqlService;
 	}
