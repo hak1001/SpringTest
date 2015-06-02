@@ -17,6 +17,7 @@ import org.springframework.mail.MailSender;
 import org.springframework.oxm.Unmarshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import springbook.user.dao.UserDao;
 import springbook.user.dao.UserDaoJdbc;
@@ -32,7 +33,7 @@ import springbook.user.sqlservice.updatable.EmbeddedDbSqlRegistry;
 import com.mysql.jdbc.Driver;
 
 @Configuration
-@ImportResource("/test-applicationContext.xml")
+@EnableTransactionManagement	// <tx:annotation-driven /> 을 대신하는 애노테이션
 public class TestApplicationContext {
 	@Bean
 	public DataSource dataSource(){
