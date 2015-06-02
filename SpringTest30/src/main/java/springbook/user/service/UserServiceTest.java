@@ -181,7 +181,7 @@ public class UserServiceTest {
 	}
 	
 	// 트랜잭션 테스트용 스태틱 클래스
-	static class TestUserService extends UserServiceImpl{
+	public static class TestUserService extends UserServiceImpl{
 		private String id = "tuser2";
 		
 		protected void upgradeLevel(User user){
