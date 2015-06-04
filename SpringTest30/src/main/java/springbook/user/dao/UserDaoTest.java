@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -31,6 +32,7 @@ import springbook.user.domain.User;
 public class UserDaoTest {
 	@Autowired UserDao dao;
 	@Autowired DataSource dataSource;
+	@Autowired DefaultListableBeanFactory bf;
 	
 	private User user1;
 	private User user2;
@@ -172,5 +174,13 @@ public class UserDaoTest {
 		
 		User user2same = dao.get(user2.getId());
 		checkSameUser(user2, user2same);
+	}
+	
+	// 컨테이너 빈 등록 정보 확인
+	@Test
+	public void beans(){
+		for(String n : bf.getBeanDefinitionNames()){
+			System.out.println(n + "\t " + bf.getBean(n).getClass().getName());
+		}
 	}
 }
