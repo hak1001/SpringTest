@@ -16,7 +16,7 @@ import com.mysql.jdbc.Driver;
 @Configuration
 @EnableTransactionManagement	// <tx:annotation-driven /> 을 대신하는 애노테이션
 @ComponentScan(basePackages="springbook.user")
-@Import(SqlServiceContext.class)
+@Import({SqlServiceContext.class, TestAppContext.class, ProductionAppContext.class})
 public class AppContext {
 	@Bean
 	public DataSource dataSource(){
