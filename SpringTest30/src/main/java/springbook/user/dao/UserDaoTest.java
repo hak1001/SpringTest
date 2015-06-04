@@ -182,5 +182,5 @@ public class UserDaoTest {
 		for(String n : bf.getBeanDefinitionNames()){
 			System.out.println(n + "\t " + bf.getBean(n).getClass().getName());
 		}
-	}
+	} 
 }
