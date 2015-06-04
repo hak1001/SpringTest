@@ -29,6 +29,9 @@ import com.mysql.jdbc.Driver;
 @Import(SqlServiceContext.class)
 @PropertySource("/database.properties")
 public class AppContext {
+	/**
+	 * @Value 필드 사용
+	 */
 	@Value("${db.driverClass}") Class<? extends Driver> driverClass;
 	@Value("${db.url}") String url;
 	@Value("${db.username}") String username;
@@ -50,6 +53,28 @@ public class AppContext {
 		
 		return ds;
 	}
+	
+	/**
+	 * Environment 사용
+	@Autowired Environment env;
+	
+	@Bean
+	public DataSource dataSource(){
+		SimpleDriverDataSource ds = new SimpleDriverDataSource();
+		
+		try {
+			ds.setDriverClass((Class<? extends java.sql.Driver>)Class.forName(env.getProperty("db.driverClass")));
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+		
+		ds.setUrl(env.getProperty("db.url"));
+		ds.setUsername(env.getProperty("db.username"));
+		ds.setPassword(env.getProperty("db.password"));
+		
+		return ds;
+	}
+	*/
 	
 	@Bean
 	public PlatformTransactionManager transactionManager(){
