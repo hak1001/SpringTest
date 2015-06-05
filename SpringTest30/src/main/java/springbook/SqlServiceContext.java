@@ -4,6 +4,7 @@ import static org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType.
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
@@ -20,12 +21,14 @@ public class SqlServiceContext {
 	/**
 	 * SQL서비스
 	 */
+	@Autowired SqlMapConfig sqlMapConfig;
 	
 	@Bean
 	public SqlService sqlService(){
 		OxmSqlService sqlService = new OxmSqlService();
 		sqlService.setUnmarshaller(unmarshaller());
 		sqlService.setSqlRegistry(sqlRegistry());
+		sqlService.setSqlmap(this.sqlMapConfig.getSqlMapResource());
 		return sqlService;
 	}
 	
