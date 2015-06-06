@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
@@ -29,7 +28,7 @@ import com.mysql.jdbc.Driver;
 @Configuration
 @EnableTransactionManagement	// <tx:annotation-driven /> 을 대신하는 애노테이션
 @ComponentScan(basePackages="springbook.user")
-@Import(SqlServiceContext.class)
+@EnableSqlService
 @PropertySource("/database.properties")
 public class AppContext implements SqlMapConfig{
 	/**
